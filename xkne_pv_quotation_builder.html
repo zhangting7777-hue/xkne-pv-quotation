@@ -1,0 +1,463 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--xk-blue:#0C447C;--xk-blue2:#185FA5;--xk-green:#1D9E75;--xk-green2:#0F6E56;--xk-light:#E6F1FB;--xk-glight:#E1F5EE}
+body{font-family:Arial,sans-serif;font-size:13px;color:var(--color-text-primary);background:transparent}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:0;border:0.5px solid var(--color-border-secondary);border-radius:12px;overflow:hidden;min-height:700px}
+.left-panel{background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-secondary);display:flex;flex-direction:column}
+.panel-head{background:#0C447C;color:#fff;padding:12px 16px}
+.panel-head .t{font-size:13px;font-weight:500}
+.panel-head .s{font-size:11px;opacity:.75;margin-top:2px}
+.project-fields{padding:12px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.pf-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.pf-row:last-child{margin-bottom:0}
+.pf-item{display:flex;flex-direction:column;gap:3px}
+.pf-item label{font-size:10px;color:var(--color-text-secondary);font-weight:500}
+.pf-item input,.pf-item select{font-size:12px;padding:5px 8px;border:0.5px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);height:28px;width:100%}
+.pf-full{grid-column:1/-1}
+.items-area{flex:1;overflow-y:auto;padding:10px 14px}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;margin-top:10px}
+.section-hdr:first-child{margin-top:0}
+.sec-label{font-size:11px;font-weight:500;color:#0C447C;text-transform:uppercase;letter-spacing:.04em}
+.add-btn{font-size:11px;color:#1D9E75;cursor:pointer;border:0.5px solid #1D9E75;border-radius:20px;padding:2px 8px;background:none;display:flex;align-items:center;gap:3px}
+.add-btn:hover{background:#E1F5EE}
+.item-row{display:grid;grid-template-columns:1fr 62px 58px 22px;gap:4px;margin-bottom:4px;align-items:center}
+.item-row input{font-size:12px;padding:4px 7px;border:0.5px solid var(--color-border-tertiary);border-radius:5px;background:var(--color-background-primary);color:var(--color-text-primary);height:26px;width:100%}
+.item-row input:focus{outline:none;border-color:#185FA5}
+.item-row .ph{font-size:10px;color:var(--color-text-secondary)}
+.del-btn{color:#E24B4A;cursor:pointer;font-size:16px;background:none;border:none;line-height:1;padding:0;text-align:center}
+.col-heads{display:grid;grid-template-columns:1fr 62px 58px 22px;gap:4px;margin-bottom:3px}
+.col-heads span{font-size:10px;color:var(--color-text-secondary);padding-left:2px}
+.totals-bar{padding:10px 14px;border-top:0.5px solid var(--color-border-secondary);background:var(--color-background-primary)}
+.total-line{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.total-line .tl{font-size:11px;color:var(--color-text-secondary)}
+.total-line .tv{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.grand-line{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#0C447C;border-radius:6px;margin-top:6px}
+.grand-line .gl{font-size:12px;color:#fff;font-weight:500}
+.grand-line .gv{font-size:16px;color:#fff;font-weight:500}
+.unit-line{display:flex;justify-content:space-between;margin-top:5px}
+.unit-line span{font-size:11px;color:var(--color-text-secondary)}
+.unit-line b{font-size:11px;color:#1D9E75;font-weight:500}
+.action-bar{padding:10px 14px;border-top:0.5px solid var(--color-border-secondary)}
+.exp-btn{width:100%;padding:8px;background:#1D9E75;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.exp-btn:hover{background:#0F6E56}
+.right-panel{background:var(--color-background-primary);display:flex;flex-direction:column}
+.preview-head{background:#185FA5;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.preview-head .t{font-size:12px;font-weight:500}
+.live-tag{font-size:10px;background:#1D9E75;color:#fff;padding:2px 8px;border-radius:10px}
+.preview-scroll{flex:1;overflow-y:auto;padding:14px;max-height:780px}
+.doc{background:#fff;border:0.5px solid #ddd;border-radius:6px;overflow:hidden;font-size:12px}
+.doc-header{background:#0C447C;color:#fff;padding:14px 18px 10px}
+.doc-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.logo-box{background:#fff;border-radius:4px;padding:3px 8px;display:flex;align-items:center;gap:4px}
+.logo-xk{font-size:15px;font-weight:700;color:#0C447C;letter-spacing:-1px}
+.logo-leaf{color:#1D9E75;font-size:15px}
+.logo-name{font-size:11px;color:#0C447C;font-weight:500}
+.co-name{font-size:12px;opacity:.8}
+.doc-title{font-size:17px;font-weight:700;line-height:1.3;margin:4px 0 2px}
+.doc-subtitle{font-size:11px;opacity:.75}
+.doc-mode-bar{background:#1D9E75;color:#fff;padding:7px 18px;font-size:12px;font-weight:500}
+.doc-body{padding:14px 18px}
+.sec-block{margin-bottom:14px}
+.sec-title-bar{background:#0C447C;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.sec-title-bar i{font-size:14px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.kpi-box{border:1px solid #e0eaf5;border-radius:5px;padding:7px 8px;text-align:center}
+.kpi-box .kl{font-size:10px;color:#666;margin-bottom:3px;line-height:1.3}
+.kpi-box .kv{font-size:14px;font-weight:700;color:#0C447C}
+.kpi-box .ku{font-size:10px;color:#888}
+.kpi-box.hi .kv{color:#1D9E75}
+.detail-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.detail-tbl th{background:#E6F1FB;color:#0C447C;padding:5px 8px;text-align:left;border:0.5px solid #cce0f0;font-weight:500}
+.detail-tbl th:last-child,.detail-tbl td:last-child{text-align:right}
+.detail-tbl td{padding:5px 8px;border:0.5px solid #e8e8e8;color:#222}
+.detail-tbl .mod-row td{background:#f0f7ff;font-weight:500;color:#0C447C;font-size:10px}
+.detail-tbl .sub-row td{background:#E1F5EE;font-weight:500;color:#0F6E56}
+.detail-tbl .grand-row td{background:#0C447C;color:#fff;font-weight:700;font-size:12px;padding:7px 8px}
+.adv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.adv-box{border:1px solid #e0f0ea;border-radius:5px;padding:8px 6px;text-align:center}
+.adv-box .ai{font-size:18px;color:#1D9E75;margin-bottom:4px}
+.adv-box .at{font-size:11px;font-weight:600;color:#0C447C;margin-bottom:3px}
+.adv-box .as{font-size:10px;color:#666;line-height:1.4}
+.effect-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.effect-tbl th{background:#0C447C;color:#fff;padding:5px 8px;text-align:center}
+.effect-tbl td{padding:5px 8px;border:0.5px solid #e8e8e8;text-align:center;color:#222}
+.effect-tbl .hi-row td{font-weight:700;color:#E24B4A;background:#fff8f8}
+.contact-bar{background:#f5f5f5;border-top:1px solid #eee;padding:10px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px}
+.contact-col .ct{font-weight:600;color:#0C447C;margin-bottom:2px}
+.contact-col .cv{color:#444}
+.doc-footer{background:#0C447C;color:#fff;text-align:center;padding:7px;font-size:11px;letter-spacing:.15em}
+</style>
+
+<div class="topbar-actions" style="display:flex;align-items:center;gap:8px;margin-left:auto">
+    <a href="https://railway.com/new/github" target="_blank" style="font-size:11px;color:rgba(255,255,255,0.8);text-decoration:none;padding:4px 10px;border:1px solid rgba(255,255,255,0.4);border-radius:4px">🔗 Railway 部署</a>
+  </div>
+</div>
+
+<h2 class="sr-only">鑫科新能源光伏EPC报价单编辑与预览系统</h2>
+
+<div class="layout">
+
+<div class="left-panel">
+  <div class="panel-head">
+    <div class="t"><i class="ti ti-edit" aria-hidden="true"></i> 报价参数编辑</div>
+    <div class="s">修改任意参数，右侧报价单实时更新</div>
+  </div>
+
+  <div class="project-fields">
+    <div class="pf-row">
+      <div class="pf-item pf-full">
+        <label>客户/业主单位</label>
+        <input id="f_owner" value="泉兴机械厂" oninput="render()">
+      </div>
+    </div>
+    <div class="pf-row">
+      <div class="pf-item"><label>项目地址</label><input id="f_addr" value="福建省福州市" oninput="render()"></div>
+      <div class="pf-item"><label>报价编号</label><input id="f_qno" value="XK-2025-002" oninput="render()"></div>
+    </div>
+    <div class="pf-row">
+      <div class="pf-item"><label>装机容量（kW）</label><input id="f_cap" type="number" value="240" min="1" oninput="render()"></div>
+      <div class="pf-item"><label>合作模式</label>
+        <select id="f_mode" onchange="render()">
+          <option value="epc">EPC总承包（客户投资）</option>
+          <option value="emc" selected>EMC能源管理（我司投资）</option>
+        </select>
+      </div>
+    </div>
+    <div class="pf-row">
+      <div class="pf-item"><label>年利用小时（h）</label><input id="f_hrs" type="number" value="1100" oninput="render()"></div>
+      <div class="pf-item"><label>自用比例</label><input id="f_ratio" type="number" value="0.80" step="0.05" min="0" max="1" oninput="render()"></div>
+    </div>
+    <div class="pf-row">
+      <div class="pf-item"><label>自用电价（元/kWh）</label><input id="f_selfp" type="number" value="0.95" step="0.01" oninput="render()"></div>
+      <div class="pf-item"><label>上网电价（元/kWh）</label><input id="f_tariff" type="number" value="0.379" step="0.001" oninput="render()"></div>
+    </div>
+    <div class="pf-row">
+      <div class="pf-item"><label>联系人</label><input id="f_contact" value="张挺" oninput="render()"></div>
+      <div class="pf-item"><label>联系电话</label><input id="f_phone" value="18367911260" oninput="render()"></div>
+    </div>
+  </div>
+
+  <div class="items-area" id="items-area"></div>
+
+  <div class="totals-bar">
+    <div class="total-line"><span class="tl">直接成本小计</span><span class="tv" id="t_direct">—</span></div>
+    <div class="total-line"><span class="tl">管理费 <input type="number" id="t_mgt" value="3" min="0" max="30" step="0.5" style="width:36px;height:18px;font-size:11px;padding:0 4px;border:0.5px solid var(--color-border-tertiary);border-radius:3px;display:inline;margin:0 2px" oninput="render()">%</span><span class="tv" id="t_mgt_amt">—</span></div>
+    <div class="total-line"><span class="tl">增值税 <input type="number" id="t_vat" value="9" min="0" max="13" step="1" style="width:36px;height:18px;font-size:11px;padding:0 4px;border:0.5px solid var(--color-border-tertiary);border-radius:3px;display:inline;margin:0 2px" oninput="render()">%</span><span class="tv" id="t_vat_amt">—</span></div>
+    <div class="total-line"><span class="tl">利润 <input type="number" id="t_prf" value="5" min="0" max="30" step="0.5" style="width:36px;height:18px;font-size:11px;padding:0 4px;border:0.5px solid var(--color-border-tertiary);border-radius:3px;display:inline;margin:0 2px" oninput="render()">%</span><span class="tv" id="t_prf_amt">—</span></div>
+    <div class="grand-line">
+      <span class="gl">项目总报价</span>
+      <span class="gv" id="t_grand">¥ 0</span>
+    </div>
+    <div class="unit-line">
+      <span id="t_unit">综合单价 —</span>
+      <b id="t_payback">回收期 —</b>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <button class="exp-btn" onclick="exportDoc()">
+      <i class="ti ti-printer" aria-hidden="true"></i> 打印 / 导出PDF报价单
+    </button>
+  </div>
+</div>
+
+<div class="right-panel">
+  <div class="preview-head">
+    <span class="t">报价单预览</span>
+    <span class="live-tag">实时同步</span>
+  </div>
+  <div class="preview-scroll">
+    <div class="doc" id="doc-preview"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const SECTIONS=[
+  {key:'equipment',label:'一、光伏核心设备',items:[
+    {name:'高效TopCon N型组件（645W双面双玻）',up:0.83,brand:'晶科Tiger Neo'},
+    {name:'并网逆变器（组串式）',up:0.15,brand:'华为SUN2000-150K'},
+    {name:'光伏支架及夹具',up:0.99,brand:'锌铝镁'},
+  ]},
+  {key:'electrical',label:'二、电气系统设备',items:[
+    {name:'并网柜和反孤岛柜',up:0.05,brand:'川泉/正泰'},
+    {name:'直流线缆 PV1-F-4铜',up:0.06,brand:'玖开、上上'},
+    {name:'逆变器交流电缆 3×95+1×50',up:0.21,brand:'玖开、上上'},
+    {name:'T接交流电缆 3×240+1×120',up:0.08,brand:'玖开、上上'},
+    {name:'线缆桥架（锌铝镁）',up:0.015,brand:''},
+    {name:'安装辅材（接地、线管等）',up:0.02,brand:''},
+  ]},
+  {key:'monitor',label:'三、监控与智能系统',items:[
+    {name:'通讯调度设备（群调群控）',up:0.042,brand:'>400kW必配'},
+    {name:'谐波治理装置',up:0.03,brand:''},
+  ]},
+  {key:'om',label:'四、运维设施',items:[
+    {name:'运维检修通道及PE管',up:0.01,brand:'含喷淋清洗'},
+    {name:'组件积灰导水装置（304不锈钢）',up:0.005,brand:''},
+  ]},
+  {key:'service',label:'五、施工与设计服务',items:[
+    {name:'光伏安装施工（含吊装、接线）',up:0.27,brand:''},
+    {name:'电力申请及并网验收',up:0.01,brand:''},
+    {name:'现场勘查及施工图设计',up:0.02,brand:''},
+    {name:'施工责任一切险',up:0.015,brand:''},
+    {name:'建设工程设计费',up:0.02,brand:''},
+  ]},
+];
+
+let state={sections:JSON.parse(JSON.stringify(SECTIONS))};
+
+function gv(id){return document.getElementById(id)?.value||''}
+function gn(id){return parseFloat(document.getElementById(id)?.value)||0}
+function fmt(n){return '¥'+Math.round(n).toLocaleString('zh-CN')}
+function fmtW(n){return n.toFixed(3)}
+
+function buildItemsArea(){
+  const area=document.getElementById('items-area');
+  area.innerHTML='';
+  state.sections.forEach((sec,si)=>{
+    const hdr=document.createElement('div');
+    hdr.className='section-hdr';
+    hdr.innerHTML=`<span class="sec-label">${sec.label}</span><button class="add-btn" onclick="addItem(${si})"><i class="ti ti-plus" style="font-size:11px" aria-hidden="true"></i> 增加行</button>`;
+    area.appendChild(hdr);
+    const cols=document.createElement('div');
+    cols.className='col-heads';
+    cols.innerHTML='<span>名称</span><span>单价(元/W)</span><span>品牌备注</span><span></span>';
+    area.appendChild(cols);
+    sec.items.forEach((it,ii)=>{
+      const row=document.createElement('div');
+      row.className='item-row';
+      row.innerHTML=`
+        <input value="${it.name}" placeholder="项目名称" oninput="updateItem(${si},${ii},'name',this.value)">
+        <input type="number" value="${it.up}" step="0.001" min="0" style="text-align:right" oninput="updateItem(${si},${ii},'up',parseFloat(this.value)||0)">
+        <input value="${it.brand||''}" placeholder="品牌/备注" oninput="updateItem(${si},${ii},'brand',this.value)">
+        <button class="del-btn" onclick="delItem(${si},${ii})" aria-label="删除此行">×</button>`;
+      area.appendChild(row);
+    });
+  });
+}
+
+function addItem(si){
+  state.sections[si].items.push({name:'新增项目',up:0,brand:''});
+  buildItemsArea();render();
+}
+function delItem(si,ii){
+  if(state.sections[si].items.length<=1)return;
+  state.sections[si].items.splice(ii,1);
+  buildItemsArea();render();
+}
+function updateItem(si,ii,key,val){
+  state.sections[si].items[ii][key]=val;
+  render();
+}
+
+function calcAll(){
+  const cap=gn('f_cap')||240;
+  const w=cap*1000;
+  const mgt=gn('t_mgt')/100;
+  const vat=gn('t_vat')/100;
+  const prf=gn('t_prf')/100;
+  let secTotals=[];
+  let direct=0;
+  state.sections.forEach(sec=>{
+    let s=0;
+    sec.items.forEach(it=>{s+=it.up*w});
+    secTotals.push(s);direct+=s;
+  });
+  const mgtAmt=direct*mgt;
+  const vatAmt=direct*vat;
+  const prfAmt=direct*prf;
+  const grand=direct+mgtAmt+vatAmt+prfAmt;
+  const unitW=grand/w;
+  const annGen=cap*gn('f_hrs')*(0.82);
+  const selfRev=annGen*gn('f_ratio')*gn('f_selfp');
+  const gridRev=annGen*(1-gn('f_ratio'))*gn('f_tariff');
+  const annRev=selfRev+gridRev;
+  const pb=annRev>0?grand/annRev:0;
+  const cum25=annRev*25*(1-0.005*12.5);
+  return{cap,w,secTotals,direct,mgtAmt,vatAmt,prfAmt,grand,unitW,annGen,annRev,pb,cum25,mgt,vat,prf,selfRev,gridRev};
+}
+
+function updateTotals(d){
+  document.getElementById('t_direct').textContent=fmt(d.direct);
+  document.getElementById('t_mgt_amt').textContent=fmt(d.mgtAmt);
+  document.getElementById('t_vat_amt').textContent=fmt(d.vatAmt);
+  document.getElementById('t_prf_amt').textContent=fmt(d.prfAmt);
+  document.getElementById('t_grand').textContent=fmt(d.grand);
+  document.getElementById('t_unit').textContent='综合单价 '+fmtW(d.unitW)+' 元/W';
+  document.getElementById('t_payback').textContent='回收期 '+d.pb.toFixed(1)+' 年';
+}
+
+function buildDoc(d){
+  const owner=gv('f_owner')||'客户单位';
+  const addr=gv('f_addr');
+  const qno=gv('f_qno');
+  const mode=gv('f_mode');
+  const modeLabel=mode==='emc'?'EMC能源管理模式（我司投资）优惠报价':'EPC总承包报价';
+  const contact=gv('f_contact');
+  const phone=gv('f_phone');
+  const isEMC=mode==='emc';
+  const today=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
+
+  let detailRows='';
+  state.sections.forEach((sec,si)=>{
+    detailRows+=`<tr class="mod-row"><td colspan="4">${sec.label}</td></tr>`;
+    sec.items.forEach(it=>{
+      const amt=it.up*d.w;
+      detailRows+=`<tr><td style="padding-left:14px">${it.name}</td><td>${it.brand||'—'}</td><td style="text-align:right">${fmtW(it.up)}</td><td style="text-align:right">¥${Math.round(amt).toLocaleString()}</td></tr>`;
+    });
+    detailRows+=`<tr class="sub-row"><td colspan="2">小计</td><td></td><td style="text-align:right">¥${Math.round(d.secTotals[si]).toLocaleString()}</td></tr>`;
+  });
+  detailRows+=`<tr><td>管理费（${(d.mgt*100).toFixed(0)}%）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.mgtAmt).toLocaleString()}</td></tr>`;
+  detailRows+=`<tr><td>增值税（${(d.vat*100).toFixed(0)}%专票）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.vatAmt).toLocaleString()}</td></tr>`;
+  detailRows+=`<tr><td>目标利润（${(d.prf*100).toFixed(0)}%）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.prfAmt).toLocaleString()}</td></tr>`;
+  detailRows+=`<tr class="grand-row"><td colspan="2">项目总报价</td><td style="text-align:right">${fmtW(d.unitW)} 元/W</td><td style="text-align:right">¥${Math.round(d.grand).toLocaleString()}</td></tr>`;
+
+  const pcts=[50,70,100];
+  let effRows='';
+  pcts.forEach(p=>{
+    const gen=(d.cap*gn('f_hrs')*0.82*p/100/10000).toFixed(2);
+    const selfR=(d.cap*gn('f_hrs')*0.82*(p/100)*Math.min(gn('f_ratio'),p/100)*gn('f_selfp')/10000).toFixed(1);
+    const gridR=(d.cap*gn('f_hrs')*0.82*(p/100)*Math.max(0,p/100-gn('f_ratio'))*gn('f_tariff')/10000).toFixed(1);
+    const rev=(parseFloat(selfR)+parseFloat(gridR)).toFixed(1);
+    effRows+=`<tr><td>${p}%</td><td>${gen}</td><td>${rev}</td></tr>`;
+  });
+  const cum25w=(d.cum25/10000).toFixed(1);
+  effRows+=`<tr class="hi-row"><td>平均消纳80%，25年总收益（万元）</td><td colspan="2">${cum25w}</td></tr>`;
+
+  const priceNote=isEMC
+    ?`<p style="color:#666;font-size:11px;line-height:1.7;margin:0">本项目采用EMC能源管理模式，由我司全额投资建设，业主<b style="color:#0C447C">零投入、零风险、零运维</b>，仅需通过用电差价享受稳定收益。项目合作周期25年，电站运营期间所有光伏设备维护费用由我司承担。</p>`
+    :` <p style="color:#666;font-size:11px;line-height:1.7;margin:0">本项目采用EPC总承包模式，由贵方投资，我司提供设计、采购、施工、并网全流程交钥匙服务。含${(d.vat*100).toFixed(0)}%增值税专用发票，可抵扣进项税。</p>`;
+
+  document.getElementById('doc-preview').innerHTML=`
+<div class="doc-header">
+  <div class="doc-logo-row">
+    <div class="logo-box"><span class="logo-xk">XKNE</span><span class="logo-leaf">✦</span><span class="logo-name">鑫科新能源</span></div>
+    <span class="co-name">Xin Ke New Energy</span>
+  </div>
+  <div class="doc-title">${owner}屋顶分布式光伏项目<br>建议书</div>
+  <div class="doc-subtitle">${addr} &nbsp;|&nbsp; ${today} &nbsp;|&nbsp; 编号：${qno}</div>
+</div>
+<div class="doc-mode-bar">${modeLabel}</div>
+<div class="doc-body">
+
+<div class="sec-block">
+  <div class="sec-title-bar"><i class="ti ti-file-description" aria-hidden="true" style="font-size:14px"></i> 一、项目概况</div>
+  ${priceNote}
+</div>
+
+<div class="sec-block">
+  <div class="sec-title-bar"><i class="ti ti-chart-bar" aria-hidden="true" style="font-size:14px"></i> 二、项目核心收益参数</div>
+  <div class="kpi-grid">
+    <div class="kpi-box"><div class="kl">装机容量（千瓦）</div><div class="kv">${d.cap}</div></div>
+    <div class="kpi-box"><div class="kl">综合单价（元/瓦）</div><div class="kv">${fmtW(d.unitW)}</div></div>
+    <div class="kpi-box"><div class="kl">首年发电量（万度）</div><div class="kv">${(d.annGen/10000).toFixed(2)}</div></div>
+    <div class="kpi-box hi"><div class="kl">25年累计收益（万元）</div><div class="kv">${(d.cum25/10000).toFixed(1)}</div></div>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+    <div class="kpi-box"><div class="kl">总投资报价</div><div class="kv" style="font-size:13px">¥${(d.grand/10000).toFixed(1)}万</div></div>
+    <div class="kpi-box hi"><div class="kl">简单回收期</div><div class="kv" style="font-size:13px">${d.pb.toFixed(1)} 年</div></div>
+  </div>
+</div>
+
+${isEMC?`
+<div class="sec-block">
+  <div class="sec-title-bar"><i class="ti ti-shield-check" aria-hidden="true" style="font-size:14px"></i> 三、EMC能源管理模式优势</div>
+  <div class="adv-grid">
+    <div class="adv-box"><div class="ai"><i class="ti ti-coin" aria-hidden="true"></i></div><div class="at">业主零投入</div><div class="as">我司全额出资建设，业主无需投入资金</div></div>
+    <div class="adv-box"><div class="ai"><i class="ti ti-shield" aria-hidden="true"></i></div><div class="at">业主零风险</div><div class="as">电站建设、运营风险均由我司承担</div></div>
+    <div class="adv-box"><div class="ai"><i class="ti ti-tool" aria-hidden="true"></i></div><div class="at">业主零运维</div><div class="as">电站运营期所有设备运营由我司负责</div></div>
+    <div class="adv-box"><div class="ai"><i class="ti ti-trending-up" aria-hidden="true"></i></div><div class="at">稳定收益</div><div class="as">通过用电差价享受长期稳定收益</div></div>
+  </div>
+</div>`:''}
+
+<div class="sec-block">
+  <div class="sec-title-bar"><i class="ti ti-list" aria-hidden="true" style="font-size:14px"></i> ${isEMC?'四':'三'}、报价明细清单</div>
+  <table class="detail-tbl">
+    <thead><tr><th style="width:40%">名称</th><th style="width:20%">品牌/备注</th><th style="width:16%;text-align:right">单价（元/W）</th><th style="width:24%;text-align:right">金额（元）</th></tr></thead>
+    <tbody>${detailRows}</tbody>
+  </table>
+</div>
+
+<div class="sec-block">
+  <div class="sec-title-bar"><i class="ti ti-calculator" aria-hidden="true" style="font-size:14px"></i> ${isEMC?'五':'四'}、项目效益分析（按不同消纳比例）</div>
+  <table class="effect-tbl">
+    <thead><tr><th>消纳比例</th><th>年度发电量（万度电）</th><th>年度收益金额（万元）</th></tr></thead>
+    <tbody>${effRows}</tbody>
+  </table>
+</div>
+
+<div class="sec-block" style="margin-bottom:0">
+  <div class="sec-title-bar"><i class="ti ti-calendar" aria-hidden="true" style="font-size:14px"></i> ${isEMC?'六':'五'}、项目合作周期</div>
+  <p style="font-size:11px;color:#555;line-height:1.7">项目合作周期为25年，合同期内我司负责电站的投资、建设、运营、维护，业主享受长期稳定的用电差价收益。</p>
+</div>
+</div>
+
+<div class="contact-bar">
+  <div class="contact-col"><div class="ct">厦门运营中心</div><div class="cv">集美区杏林湾运营中心11#2501室</div></div>
+  <div class="contact-col"><div class="ct">福州运营中心</div><div class="cv">仓山区建新北路香安中心3#1203室</div></div>
+  <div class="contact-col"><div class="ct">联系人：${contact}</div><div class="cv">联系电话：${phone}</div></div>
+</div>
+<div class="doc-footer">鑫科新能源 &nbsp;&nbsp; 绿色能源 &nbsp;&nbsp; 驱动未来</div>`;
+}
+
+function render(){
+  const d=calcAll();
+  updateTotals(d);
+  buildDoc(d);
+}
+
+function exportDoc(){
+  const preview=document.getElementById('doc-preview').innerHTML;
+  const win=window.open('','_blank','width=800,height=900');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>鑫科新能源光伏项目报价单</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+  <style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+  body{background:#f0f0f0;padding:20px}
+  .doc{max-width:720px;margin:0 auto;background:#fff;border-radius:6px;overflow:hidden;font-size:12px}
+  .doc-header{background:#0C447C;color:#fff;padding:18px 22px 14px}
+  .doc-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .logo-box{background:#fff;border-radius:4px;padding:3px 10px;display:flex;align-items:center;gap:5px}
+  .logo-xk{font-size:16px;font-weight:700;color:#0C447C;letter-spacing:-1px}
+  .logo-leaf{color:#1D9E75;font-size:16px}
+  .logo-name{font-size:11px;color:#0C447C;font-weight:600}
+  .co-name{font-size:12px;opacity:.8}
+  .doc-title{font-size:20px;font-weight:700;line-height:1.3;margin:6px 0 3px}
+  .doc-subtitle{font-size:11px;opacity:.75}
+  .doc-mode-bar{background:#1D9E75;color:#fff;padding:8px 22px;font-size:12px;font-weight:600}
+  .doc-body{padding:16px 22px}
+  .sec-block{margin-bottom:16px}
+  .sec-title-bar{background:#0C447C;color:#fff;padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}
+  .kpi-box{border:1px solid #d0e8f5;border-radius:5px;padding:8px 10px;text-align:center}
+  .kpi-box .kl{font-size:10px;color:#666;margin-bottom:4px;line-height:1.3}
+  .kpi-box .kv{font-size:15px;font-weight:700;color:#0C447C}
+  .kpi-box.hi .kv{color:#1D9E75}
+  .adv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:8px 0}
+  .adv-box{border:1px solid #d0f0e8;border-radius:5px;padding:10px 8px;text-align:center}
+  .adv-box .ai{font-size:20px;color:#1D9E75;margin-bottom:5px}
+  .adv-box .at{font-size:11px;font-weight:700;color:#0C447C;margin-bottom:3px}
+  .adv-box .as{font-size:10px;color:#666;line-height:1.5}
+  .detail-tbl,.effect-tbl{width:100%;border-collapse:collapse;font-size:11px}
+  .detail-tbl th,.effect-tbl th{background:#E6F1FB;color:#0C447C;padding:6px 10px;text-align:left;border:0.5px solid #cce0f0;font-weight:600}
+  .detail-tbl th:last-child,.detail-tbl td:last-child{text-align:right}
+  .detail-tbl td,.effect-tbl td{padding:6px 10px;border:0.5px solid #e8e8e8;color:#222}
+  .detail-tbl .mod-row td{background:#f0f7ff;font-weight:600;color:#0C447C;font-size:10px}
+  .detail-tbl .sub-row td{background:#E1F5EE;font-weight:600;color:#0F6E56}
+  .detail-tbl .grand-row td{background:#0C447C;color:#fff;font-weight:700;font-size:13px;padding:8px 10px}
+  .effect-tbl th{text-align:center}.effect-tbl td{text-align:center}
+  .hi-row td{font-weight:700;color:#C00;background:#fff8f8}
+  .contact-bar{background:#f5f5f5;border-top:1px solid #eee;padding:12px 22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:10px}
+  .contact-col .ct{font-weight:700;color:#0C447C;margin-bottom:3px}
+  .contact-col .cv{color:#444}
+  .doc-footer{background:#0C447C;color:#fff;text-align:center;padding:8px;font-size:12px;letter-spacing:.15em}
+  @media print{body{padding:0;background:#fff}.doc{border-radius:0}}
+  </style></head><body><div class="doc">${preview}</div></body></html>`);
+  win.document.close();win.focus();
+  setTimeout(()=>win.print(),700);
+}
+
+buildItemsArea();render();
+</script>
