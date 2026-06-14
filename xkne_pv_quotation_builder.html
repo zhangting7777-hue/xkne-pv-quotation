@@ -142,16 +142,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
       </div>
       <div class="pf-item"><label>装机容量（kW）</label><input id="f_cap" type="number" value="240" min="1" oninput="render()"></div>
     </div>
+    
     <div class="pf-row" id="emc_discount_box" style="display:flex;">
-      <div class="pf-item pf-full"><label style="color:#1D9E75">EMC 业主享电费折扣 (%)</label><input id="f_emc_discount" type="number" value="15" step="1" min="1" max="100" oninput="render()"></div>
+      <div class="pf-item">
+        <label style="color:var(--xk-green)">EMC 收益模式</label>
+        <select id="f_emc_type" onchange="toggleEmcFields(); render();">
+          <option value="discount" selected>比例折扣 (%)</option>
+          <option value="fixed">固定电价 (元/度)</option>
+        </select>
+      </div>
+      <div class="pf-item" id="emc_discount_input_box">
+        <label style="color:var(--xk-green)">业主享电费折扣 (%)</label>
+        <input id="f_emc_discount" type="number" value="15" step="1" min="1" max="100" oninput="render()">
+      </div>
+      <div class="pf-item" id="emc_fixed_input_box" style="display:none;">
+        <label style="color:var(--xk-green)">协议固定电价 (元/度)</label>
+        <input id="f_emc_fixed" type="number" value="0.45" step="0.01" min="0" oninput="render()">
+      </div>
+    </div>
+
+    <div class="pf-row">
+      <div class="pf-item"><label>原自用市电价（元/度）</label><input id="f_selfp" type="number" value="0.73" step="0.01" oninput="render()"></div>
+      <div class="pf-item"><label>上网电价（元/度）</label><input id="f_tariff" type="number" value="0.379" step="0.001" oninput="render()"></div>
     </div>
     <div class="pf-row">
       <div class="pf-item"><label>年利用小时（h）</label><input id="f_hrs" type="number" value="1100" oninput="render()"></div>
       <div class="pf-item"><label>自用比例 (0-1)</label><input id="f_ratio" type="number" value="0.80" step="0.05" min="0" max="1" oninput="render()"></div>
-    </div>
-    <div class="pf-row">
-      <div class="pf-item"><label>原自用市电价（元/度）</label><input id="f_selfp" type="number" value="0.95" step="0.01" oninput="render()"></div>
-      <div class="pf-item"><label>上网电价（元/度）</label><input id="f_tariff" type="number" value="0.379" step="0.001" oninput="render()"></div>
     </div>
     <div class="pf-row">
       <div class="pf-item"><label>联系人</label><input id="f_contact" value="张挺" oninput="render()"></div>
@@ -194,6 +210,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 </div>
 
 <script>
+// 基础设备数据初始化（单价已微调规范至“分”单位，无“厘”数据）
 const SECTIONS=[
   {key:'equipment',label:'一、光伏核心设备',items:[
     {name:'高效TopCon N型组件（645W双玻）',up:0.83,brand:'晶科Tiger Neo'},
@@ -205,22 +222,22 @@ const SECTIONS=[
     {name:'直流线缆 PV1-F-4铜',up:0.06,brand:'玖开、上上'},
     {name:'逆变器交流电缆 3×95+1×50',up:0.21,brand:'玖开、上上'},
     {name:'T接交流电缆 3×240+1×120',up:0.08,brand:'玖开、上上'},
-    {name:'线缆桥架（锌铝镁）',up:0.015,brand:''},
+    {name:'线缆桥架（锌铝镁）',up:0.02,brand:''},
     {name:'安装辅材（接地、线管等）',up:0.02,brand:''},
   ]},
   {key:'monitor',label:'三、监控与智能系统',items:[
-    {name:'通讯调度设备（群调群控）',up:0.042,brand:'>400kW必配'},
+    {name:'通讯调度设备（群调群控）',up:0.04,brand:'>400kW必配'},
     {name:'谐波治理装置',up:0.03,brand:''},
   ]},
   {key:'om',label:'四、运维设施',items:[
     {name:'运维检修通道及PE管',up:0.01,brand:'含喷淋清洗'},
-    {name:'组件积灰导水装置（304不锈）',up:0.005,brand:''},
+    {name:'组件积灰导水装置（304不锈）',up:0.01,brand:''},
   ]},
   {key:'service',label:'五、施工与设计服务',items:[
     {name:'光伏安装施工（含吊装、接线）',up:0.27,brand:''},
     {name:'电力申请及并网验收',up:0.01,brand:''},
     {name:'现场勘查及施工图设计',up:0.02,brand:''},
-    {name:'施工责任一切险',up:0.015,brand:''},
+    {name:'施工责任一切险',up:0.02,brand:''},
     {name:'建设工程设计费',up:0.02,brand:''},
   ]},
 ];
@@ -230,7 +247,22 @@ let state={sections:JSON.parse(JSON.stringify(SECTIONS))};
 function gv(id){return document.getElementById(id)?.value||''}
 function gn(id){return parseFloat(document.getElementById(id)?.value)||0}
 function fmt(n){return '¥'+Math.round(n).toLocaleString('zh-CN')}
-function fmtW(n){return n.toFixed(3)}
+function fmtW(n){return n.toFixed(2)} // 综合单价及列表单价统一规范输出：保留2位小数（分）
+
+function toggleEmcFields() {
+  const type = gv('f_emc_type');
+  const discBox = document.getElementById('emc_discount_input_box');
+  const fixedBox = document.getElementById('emc_fixed_input_box');
+  if (discBox && fixedBox) {
+    if (type === 'discount') {
+      discBox.style.display = 'flex';
+      fixedBox.style.display = 'none';
+    } else {
+      discBox.style.display = 'none';
+      fixedBox.style.display = 'flex';
+    }
+  }
+}
 
 function buildItemsArea(){
   const area=document.getElementById('items-area');
@@ -247,9 +279,10 @@ function buildItemsArea(){
     sec.items.forEach((it,ii)=>{
       const row=document.createElement('div');
       row.className='item-row';
+      // 单价的 step 已优化调整为 0.01（按分调整）
       row.innerHTML=`
         <input value="${it.name}" placeholder="名称" oninput="updateItem(${si},${ii},'name',this.value)">
-        <input type="number" value="${it.up}" step="0.001" min="0" style="text-align:right" oninput="updateItem(${si},${ii},'up',parseFloat(this.value)||0)">
+        <input type="number" value="${it.up}" step="0.01" min="0" style="text-align:right" oninput="updateItem(${si},${ii},'up',parseFloat(this.value)||0)">
         <input value="${it.brand||''}" placeholder="备注" oninput="updateItem(${si},${ii},'brand',this.value)">
         <button class="del-btn" onclick="delItem(${si},${ii})" aria-label="删除">×</button>`;
       area.appendChild(row);
@@ -308,8 +341,17 @@ function calcAll(){
   let ownerPb = pb;
 
   if (mode === 'emc') {
-    const emcDiscount = gn('f_emc_discount') / 100;
-    ownerAnnRev = selfRev * emcDiscount;
+    const emcType = gv('f_emc_type');
+    if (emcType === 'discount') {
+      const emcDiscount = gn('f_emc_discount') / 100;
+      ownerAnnRev = selfRev * emcDiscount;
+    } else {
+      // 固定电价逻辑：业主每度电节省金额 = 原自用市电价 - 协议固定电价
+      const selfPrice = gn('f_selfp');
+      const emcFixed = gn('f_emc_fixed');
+      const savingPerKwh = Math.max(0, selfPrice - emcFixed);
+      ownerAnnRev = annGen * gn('f_ratio') * savingPerKwh;
+    }
     ownerCum25 = ownerAnnRev * 25 * (1 - 0.005 * 12.5);
     ownerPb = 0; 
   }
@@ -318,7 +360,13 @@ function calcAll(){
 }
 
 function updateTotals(d){
-  document.getElementById('emc_discount_box').style.display = (d.mode === 'emc') ? 'flex' : 'none';
+  const emcBox = document.getElementById('emc_discount_box');
+  if (d.mode === 'emc') {
+    emcBox.style.display = 'flex';
+    toggleEmcFields();
+  } else {
+    emcBox.style.display = 'none';
+  }
 
   document.getElementById('t_direct').textContent = fmt(d.direct);
   document.getElementById('t_mgt_amt').textContent = fmt(d.mgtAmt);
@@ -341,7 +389,15 @@ function buildDoc(d){
   const addr = gv('f_addr');
   const qno = gv('f_qno');
   const isEMC = d.mode === 'emc';
-  const modeLabel = isEMC ? `EMC能源管理模式（享电费打折，我司全额投资）` : 'EPC总承包报价';
+  const emcType = gv('f_emc_type');
+  
+  let modeLabel = 'EPC总承包报价方案';
+  if (isEMC) {
+    modeLabel = emcType === 'discount' 
+      ? 'EMC能源管理模式（享电费折价，我司全额投资）' 
+      : 'EMC能源管理模式（协议固定电价，我司全额投资）';
+  }
+
   const contact = gv('f_contact');
   const phone = gv('f_phone');
   const today = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
@@ -365,7 +421,7 @@ function buildDoc(d){
   if (isEMC) {
       kpiDynamicRows = `
         <div class="kpi-box"><div class="kl">业主总投资</div><div class="kv" style="font-size:14px;color:#333">¥0 (我司出资)</div></div>
-        <div class="kpi-box hi"><div class="kl">首年电费直接收益</div><div class="kv" style="font-size:15px">¥${Math.round(d.ownerAnnRev).toLocaleString()}</div></div>
+        <div class="kpi-box hi"><div class="kl">首年电费直接节省</div><div class="kv" style="font-size:15px">¥${Math.round(d.ownerAnnRev).toLocaleString()}</div></div>
       `;
   } else {
       kpiDynamicRows = `
@@ -376,15 +432,23 @@ function buildDoc(d){
 
   const pcts=[50,70,100];
   let effRows='';
+  const selfPrice = gn('f_selfp');
+
   pcts.forEach(p=>{
     const gen=(d.cap*gn('f_hrs')*0.82*p/100/10000).toFixed(2);
-    const selfR=(d.cap*gn('f_hrs')*0.82*(p/100)*Math.min(gn('f_ratio'),p/100)*gn('f_selfp')/10000);
+    const selfR=(d.cap*gn('f_hrs')*0.82*(p/100)*Math.min(gn('f_ratio'),p/100)*selfPrice/10000);
     const gridR=(d.cap*gn('f_hrs')*0.82*(p/100)*Math.max(0,p/100-gn('f_ratio'))*gn('f_tariff')/10000);
     
     let rev = 0;
     if (isEMC) {
-        const emcDiscount = gn('f_emc_discount') / 100;
-        rev = (selfR * emcDiscount).toFixed(2);
+        if (emcType === 'discount') {
+            const emcDiscount = gn('f_emc_discount') / 100;
+            rev = (selfR * emcDiscount).toFixed(2);
+        } else {
+            const emcFixed = gn('f_emc_fixed');
+            const savingPerKwh = Math.max(0, selfPrice - emcFixed);
+            rev = selfPrice > 0 ? (selfR * (savingPerKwh / selfPrice)).toFixed(2) : '0.00';
+        }
     } else {
         rev = (selfR + gridR).toFixed(2);
     }
@@ -393,10 +457,19 @@ function buildDoc(d){
   const cum25w=(d.ownerCum25/10000).toFixed(1);
   effRows+=`<tr class="hi-row"><td>平均消纳80%，25年总节省/收益（万元）</td><td colspan="2">${cum25w}</td></tr>`;
 
-  const emcDiscount = gn('f_emc_discount');
-  const priceNote = isEMC
-    ? `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目建议采用 <b>EMC能源管理模式</b>，由我司（鑫科新能源）全额投资建设电站，业主方<b style="color:var(--xk-blue)">零投入、零风险、零运维</b>，仅需提供闲置屋顶。电站并网后，业主企业自发自用部分电量，即可按市电的 <b>${emcDiscount.toFixed(0)}% 折扣</b> 直接享受电费节省收益。项目合作周期25年，期间所有光伏设备维护及更换费用均由我司承担。</p>`
-    : `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目采用 <b>EPC总承包模式</b>，由贵方全额投资，我司提供方案设计、设备采购、工程施工、并网验收全流程交钥匙服务。配置规范化税费进项抵扣。电站建成后产权及全部发电收益归业主方所有。</p>`;
+  let priceNote = '';
+  if (isEMC) {
+    if (emcType === 'discount') {
+      const emcDiscount = gn('f_emc_discount');
+      priceNote = `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目建议采用 <b>EMC能源管理模式</b>，由我司（鑫科新能源）全额投资建设电站，业主方<b style="color:var(--xk-blue)">零投入、零风险、零运维</b>，仅需提供闲置屋顶。电站并网后，业主企业自发自用部分电量，即可按市电的 <b>${emcDiscount.toFixed(0)}% 折扣</b> 直接享受电费节省收益。项目合作周期25年，期间所有光伏设备维护及更换费用均由我司承担。</p>`;
+    } else {
+      const emcFixed = gn('f_emc_fixed');
+      const diffPrice = Math.max(0, selfPrice - emcFixed);
+      priceNote = `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目建议采用 <b>EMC能源管理模式</b>，由我司（鑫科新能源）全额投资建设电站，业主方<b style="color:var(--xk-blue)">零投入、零风险、零运维</b>，仅需提供闲置屋顶。电站并网后，业主企业协议自用电价固定为 <b>${emcFixed.toFixed(2)} 元/度</b>（相比原市电电价 ${selfPrice.toFixed(2)} 元/度，每度电可固定节省 <b>${diffPrice.toFixed(2)} 元</b>），直接享受稳定降本收益。项目合作周期25年，期间所有光伏设备维护及更换费用均由我司承担。</p>`;
+    }
+  } else {
+    priceNote = `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目采用 <b>EPC总承包模式</b>，由贵方全额投资，我司提供方案设计、设备采购、工程施工、并网验收全流程交钥匙服务。配置规范化税费进项抵扣。电站建成后产权及全部发电收益归业主方所有。</p>`;
+  }
 
   document.getElementById('doc-preview').innerHTML=`
 <div class="doc-header">
@@ -419,9 +492,9 @@ function buildDoc(d){
   <div class="sec-title-bar"> 二、核心收益参数表</div>
   <div class="kpi-grid">
     <div class="kpi-box"><div class="kl">装机容量（千瓦）</div><div class="kv">${d.cap}</div></div>
-    <div class="kpi-box"><div class="kl">系统价值单价（元/瓦）</div><div class="kv">${fmtW(d.unitW)}</div></div>
+    <div class="kpi-box"><div class="kl">系统造价水平（元/瓦）</div><div class="kv">${fmtW(d.unitW)}</div></div>
     <div class="kpi-box"><div class="kl">首年发电量（万度）</div><div class="kv">${(d.annGen/10000).toFixed(2)}</div></div>
-    <div class="kpi-box hi"><div class="kl">业主25年总收益（万元）</div><div class="kv">${(d.ownerCum25/10000).toFixed(1)}</div></div>
+    <div class="kpi-box hi"><div class="kl">业主25年总节省（万元）</div><div class="kv">${(d.ownerCum25/10000).toFixed(1)}</div></div>
   </div>
   <div class="kpi-grid" style="grid-template-columns:1fr 1fr;margin-bottom:0">
     ${kpiDynamicRows}
