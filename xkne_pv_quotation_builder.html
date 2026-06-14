@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>鑫科新能源光伏自动报价系统</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--xk-blue:#0C447C;--xk-blue2:#185FA5;--xk-green:#1D9E75;--xk-green2:#0F6E56;--xk-light:#E6F1FB;--xk-glight:#E1F5EE}
@@ -36,7 +41,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .total-line{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .total-line .tl{font-size:12px;color:#555}
 .total-line .tv{font-size:13px;font-weight:600;color:#333}
-.total-line input{width:42px;height:22px;font-size:12px;padding:0 6px;border:1px solid #ccc;border-radius:4px;text-align:center;margin:0 4px}
+.total-line input{width:55px;height:24px;font-size:12px;padding:0 4px;border:1px solid #ccc;border-radius:4px;text-align:center;margin:0 4px}
 .grand-line{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--xk-blue);border-radius:8px;margin-top:10px}
 .grand-line .gl{font-size:13px;color:#fff;font-weight:600}
 .grand-line .gv{font-size:18px;color:#fff;font-weight:700}
@@ -55,7 +60,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .live-tag{font-size:11px;background:var(--xk-green);color:#fff;padding:3px 10px;border-radius:12px;font-weight:500}
 .preview-scroll{flex:1;overflow-y:auto;padding:24px;background:#fff;max-height:850px}
 
-/* 内部文档样式保持高度一致 */
+/* 内部文档样式 */
 .doc{background:#fff;border:1px solid #eaeaea;border-radius:8px;overflow:hidden;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.04);margin:0 auto;max-width:800px}
 .doc-header{background:var(--xk-blue);color:#fff;padding:20px 24px 16px}
 .doc-logo-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
@@ -96,17 +101,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .contact-col .cv{color:#444;line-height:1.4}
 .doc-footer{background:var(--xk-blue);color:#fff;text-align:center;padding:10px;font-size:12px;letter-spacing:0.2em;font-weight:500}
 
-/* 响应式布局：解决移动端/窄屏下的拥挤问题 */
 @media (max-width: 900px) {
   body { padding: 0; }
   .layout { grid-template-columns: 1fr; gap: 0; border-radius: 0; }
   .left-panel { border-radius: 0; border: none; border-bottom: 2px solid #ddd; }
   .right-panel { border-radius: 0; border: none; }
   .preview-scroll { max-height: none; padding: 12px; }
-  .kpi-grid, .adv-grid { grid-template-columns: 1fr 1fr; } /* 移动端双列排版 */
+  .kpi-grid, .adv-grid { grid-template-columns: 1fr 1fr; }
   .contact-bar { grid-template-columns: 1fr; gap: 8px; }
 }
 </style>
+</head>
+<body>
 
 <div class="layout">
 
@@ -157,9 +163,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 
   <div class="totals-bar">
     <div class="total-line"><span class="tl">直接成本小计</span><span class="tv" id="t_direct">—</span></div>
-    <div class="total-line"><span class="tl">管理费 <input type="number" id="t_mgt" value="3" min="0" max="30" step="0.5" oninput="render()">%</span><span class="tv" id="t_mgt_amt">—</span></div>
-    <div class="total-line"><span class="tl">增值税 <input type="number" id="t_vat" value="9" min="0" max="13" step="1" oninput="render()">%</span><span class="tv" id="t_vat_amt">—</span></div>
-    <div class="total-line"><span class="tl">利润 <input type="number" id="t_prf" value="5" min="0" max="30" step="0.5" oninput="render()">%</span><span class="tv" id="t_prf_amt">—</span></div>
+    <div class="total-line"><span class="tl">管理费 <input type="number" id="t_mgt" value="0.06" min="0" step="0.01" oninput="render()">元/W</span><span class="tv" id="t_mgt_amt">—</span></div>
+    <div class="total-line"><span class="tl">增值税税费 <input type="number" id="t_vat" value="0.18" min="0" step="0.01" oninput="render()">元/W</span><span class="tv" id="t_vat_amt">—</span></div>
+    <div class="total-line"><span class="tl">合理利润 <input type="number" id="t_prf" value="0.10" min="0" step="0.01" oninput="render()">元/W</span><span class="tv" id="t_prf_amt">—</span></div>
     <div class="grand-line">
       <span class="gl" id="t_grand_lbl">项目总造价</span>
       <span class="gv" id="t_grand">¥ 0</span>
@@ -171,9 +177,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   </div>
 
   <div class="action-bar">
-    <button class="exp-btn" onclick="exportDoc()">
-       打印 / 导出PDF报价单
-    </button>
+    <button class="exp-btn" onclick="exportDoc()">打印 / 导出PDF报价单</button>
   </div>
 </div>
 
@@ -271,10 +275,11 @@ function calcAll(){
   const mode = gv('f_mode');
   const cap = gn('f_cap') || 240;
   const w = cap * 1000;
-  const mgt = gn('t_mgt') / 100;
-  const vat = gn('t_vat') / 100;
-  const prf = gn('t_prf') / 100;
-  const emcDiscount = gn('f_emc_discount') / 100;
+  
+  // 三项指标直接读取单瓦价格
+  const mgtVal = gn('t_mgt');
+  const vatVal = gn('t_vat');
+  const prfVal = gn('t_prf');
 
   let secTotals = [];
   let direct = 0;
@@ -284,37 +289,37 @@ function calcAll(){
     secTotals.push(s); direct += s;
   });
 
-  const mgtAmt = direct * mgt;
-  const vatAmt = direct * vat;
-  const prfAmt = direct * prf;
+  // 金额计算更改为：瓦数 * 每瓦单价
+  const mgtAmt = w * mgtVal;
+  const vatAmt = w * vatVal;
+  const prfAmt = w * prfVal;
+  
   const grand = direct + mgtAmt + vatAmt + prfAmt;
   const unitW = grand / w;
   
   const annGen = cap * gn('f_hrs') * 0.82;
-  const selfRev = annGen * gn('f_ratio') * gn('f_selfp'); // 按原市电计的总电费金额
+  const selfRev = annGen * gn('f_ratio') * gn('f_selfp'); 
   const gridRev = annGen * (1 - gn('f_ratio')) * gn('f_tariff');
-  const annRev = selfRev + gridRev; // 电站总收益
+  const annRev = selfRev + gridRev; 
 
   const pb = annRev > 0 ? grand / annRev : 0;
-  const cum25 = annRev * 25 * (1 - 0.005 * 12.5); // 电站25年总收益
+  const cum25 = annRev * 25 * (1 - 0.005 * 12.5); 
 
-  // 业主视角的收益计算
   let ownerAnnRev = annRev;
   let ownerCum25 = cum25;
   let ownerPb = pb;
 
   if (mode === 'emc') {
-    // EMC模式下，业主的收益来源于享受的“自用电费折扣”
+    const emcDiscount = gn('f_emc_discount') / 100;
     ownerAnnRev = selfRev * emcDiscount;
     ownerCum25 = ownerAnnRev * 25 * (1 - 0.005 * 12.5);
-    ownerPb = 0; // 0投入，无静态回收期
+    ownerPb = 0; 
   }
 
-  return {mode, cap, w, secTotals, direct, mgtAmt, vatAmt, prfAmt, grand, unitW, annGen, annRev, pb, cum25, mgt, vat, prf, emcDiscount, ownerAnnRev, ownerCum25, ownerPb};
+  return {mode, cap, w, secTotals, direct, mgtAmt, vatAmt, prfAmt, grand, unitW, annGen, annRev, pb, cum25, mgtVal, vatVal, prfVal, ownerAnnRev, ownerCum25, ownerPb};
 }
 
 function updateTotals(d){
-  // 动态显隐 EMC 的折扣输入框
   document.getElementById('emc_discount_box').style.display = (d.mode === 'emc') ? 'flex' : 'none';
 
   document.getElementById('t_direct').textContent = fmt(d.direct);
@@ -352,12 +357,13 @@ function buildDoc(d){
     });
     detailRows+=`<tr class="sub-row"><td colspan="2">小计</td><td></td><td style="text-align:right">¥${Math.round(d.secTotals[si]).toLocaleString()}</td></tr>`;
   });
-  detailRows+=`<tr><td>管理费（${(d.mgt*100).toFixed(0)}%）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.mgtAmt).toLocaleString()}</td></tr>`;
-  detailRows+=`<tr><td>增值税（${(d.vat*100).toFixed(0)}%专票）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.vatAmt).toLocaleString()}</td></tr>`;
-  detailRows+=`<tr><td>合理利润（${(d.prf*100).toFixed(0)}%）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.prfAmt).toLocaleString()}</td></tr>`;
+  
+  // 渲染明细表时展示具体的单瓦金额
+  detailRows+=`<tr><td>管理费（按 ${d.mgtVal.toFixed(2)} 元/W 测算）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.mgtAmt).toLocaleString()}</td></tr>`;
+  detailRows+=`<tr><td>增值税税费（按 ${d.vatVal.toFixed(2)} 元/W 测算）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.vatAmt).toLocaleString()}</td></tr>`;
+  detailRows+=`<tr><td>合理利润（按 ${d.prfVal.toFixed(2)} 元/W 测算）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.prfAmt).toLocaleString()}</td></tr>`;
   detailRows+=`<tr class="grand-row"><td colspan="2">项目系统总价值</td><td style="text-align:right">${fmtW(d.unitW)} 元/W</td><td style="text-align:right">¥${Math.round(d.grand).toLocaleString()}</td></tr>`;
 
-  // 动态处理业主视角的指标看板
   let kpiDynamicRows = '';
   if (isEMC) {
       kpiDynamicRows = `
@@ -371,7 +377,6 @@ function buildDoc(d){
       `;
   }
 
-  // 动态处理效益分析表，EMC只计算业主因打折省下的钱
   const pcts=[50,70,100];
   let effRows='';
   pcts.forEach(p=>{
@@ -381,7 +386,8 @@ function buildDoc(d){
     
     let rev = 0;
     if (isEMC) {
-        rev = (selfR * d.emcDiscount).toFixed(2);
+        const emcDiscount = gn('f_emc_discount') / 100;
+        rev = (selfR * emcDiscount).toFixed(2);
     } else {
         rev = (selfR + gridR).toFixed(2);
     }
@@ -390,9 +396,10 @@ function buildDoc(d){
   const cum25w=(d.ownerCum25/10000).toFixed(1);
   effRows+=`<tr class="hi-row"><td>平均消纳80%，25年总节省/收益（万元）</td><td colspan="2">${cum25w}</td></tr>`;
 
+  const emcDiscount = gn('f_emc_discount');
   const priceNote = isEMC
-    ? `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目建议采用 <b>EMC能源管理模式</b>，由我司（鑫科新能源）全额投资建设电站，业主方<b style="color:var(--xk-blue)">零投入、零风险、零运维</b>，仅需提供闲置屋顶。电站并网后，业主企业自发自用部分电量，即可按市电的 <b>${(d.emcDiscount*100).toFixed(0)}% 折扣</b> 直接享受电费节省收益。项目合作周期25年，期间所有光伏设备维护及更换费用均由我司承担。</p>`
-    : `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目采用 <b>EPC总承包模式</b>，由贵方全额投资，我司提供方案设计、设备采购、工程施工、并网验收全流程交钥匙服务。含${(d.vat*100).toFixed(0)}%增值税专用发票，可抵扣进项税。电站建成后产权及全部发电收益归业主方所有。</p>`;
+    ? `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目建议采用 <b>EMC能源管理模式</b>，由我司（鑫科新能源）全额投资建设电站，业主方<b style="color:var(--xk-blue)">零投入、零风险、零运维</b>，仅需提供闲置屋顶。电站并网后，业主企业自发自用部分电量，即可按市电的 <b>${emcDiscount.toFixed(0)}% 折扣</b> 直接享受电费节省收益。项目合作周期25年，期间所有光伏设备维护及更换费用均由我司承担。</p>`
+    : `<p style="color:#555;font-size:12px;line-height:1.7;margin:0">本项目采用 <b>EPC总承包模式</b>，由贵方全额投资，我司提供方案设计、设备采购、工程施工、并网验收全流程交钥匙服务。配置规范化税费进项抵扣。电站建成后产权及全部发电收益归业主方所有。</p>`;
 
   document.getElementById('doc-preview').innerHTML=`
 <div class="doc-header">
@@ -460,7 +467,7 @@ ${isEMC?`
 
 <div class="contact-bar">
   <div class="contact-col"><div class="ct">厦门运营中心</div><div class="cv">集美区杏林湾运营中心11#2501室</div></div>
-  <div class="contact-col"><div class="ct">福州运营中心</div><div class="cv">仓山区建新北路香安中心3#1203室</div></div>
+  <div class="contact-col"><div class="ct">福州运营中心</div><div class="cv">仓山区建新北路奋安中心3#1203室</div></div>
   <div class="contact-col"><div class="ct">商务联系人：${contact}</div><div class="cv">联系电话：${phone}</div></div>
 </div>
 <div class="doc-footer">鑫科新能源 &nbsp;&nbsp; 绿色能源 &nbsp;&nbsp; 驱动未来</div>`;
@@ -480,7 +487,6 @@ function exportDoc(){
   *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
   body{background:#f0f0f0;padding:20px}
   .doc{max-width:760px;margin:0 auto;background:#fff;border-radius:6px;overflow:hidden;font-size:12px}
-  /* 导出样式的核心与上方代码块保持基本一致 */
   .doc-header{background:#0C447C;color:#fff;padding:20px 24px 16px}
   .doc-logo-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
   .logo-box{background:#fff;border-radius:6px;padding:4px 10px;display:flex;align-items:center;gap:4px}
@@ -525,3 +531,5 @@ function exportDoc(){
 
 buildItemsArea();render();
 </script>
+</body>
+</html>
