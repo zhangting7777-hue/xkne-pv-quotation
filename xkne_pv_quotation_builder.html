@@ -276,7 +276,6 @@ function calcAll(){
   const cap = gn('f_cap') || 240;
   const w = cap * 1000;
   
-  // 三项指标直接读取单瓦价格
   const mgtVal = gn('t_mgt');
   const vatVal = gn('t_vat');
   const prfVal = gn('t_prf');
@@ -289,7 +288,6 @@ function calcAll(){
     secTotals.push(s); direct += s;
   });
 
-  // 金额计算更改为：瓦数 * 每瓦单价
   const mgtAmt = w * mgtVal;
   const vatAmt = w * vatVal;
   const prfAmt = w * prfVal;
@@ -358,7 +356,6 @@ function buildDoc(d){
     detailRows+=`<tr class="sub-row"><td colspan="2">小计</td><td></td><td style="text-align:right">¥${Math.round(d.secTotals[si]).toLocaleString()}</td></tr>`;
   });
   
-  // 渲染明细表时展示具体的单瓦金额
   detailRows+=`<tr><td>管理费（按 ${d.mgtVal.toFixed(2)} 元/W 测算）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.mgtAmt).toLocaleString()}</td></tr>`;
   detailRows+=`<tr><td>增值税税费（按 ${d.vatVal.toFixed(2)} 元/W 测算）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.vatAmt).toLocaleString()}</td></tr>`;
   detailRows+=`<tr><td>合理利润（按 ${d.prfVal.toFixed(2)} 元/W 测算）</td><td colspan="2"></td><td style="text-align:right">¥${Math.round(d.prfAmt).toLocaleString()}</td></tr>`;
@@ -451,7 +448,7 @@ ${isEMC?`
   </table>
 </div>
 
-<div class="sec-block">
+<div class="sec-block" style="${!isEMC ? 'margin-bottom:0' : ''}">
   <div class="sec-title-bar"> ${isEMC?'五':'四'}、业主方实际效益敏感性分析表</div>
   <table class="effect-tbl">
     <thead><tr><th>企业自用电比例</th><th>年度绿电发电量（万度）</th><th>${isEMC?'业主年度节省电费':'业主总收益金额'}（万元）</th></tr></thead>
@@ -459,10 +456,12 @@ ${isEMC?`
   </table>
 </div>
 
+${isEMC?`
 <div class="sec-block" style="margin-bottom:0">
-  <div class="sec-title-bar"> ${isEMC?'六':'五'}、项目合作周期说明</div>
+  <div class="sec-title-bar"> 六、项目合作周期说明</div>
   <p style="font-size:12px;color:#555;line-height:1.7">项目合作基准周期为 <b>25年</b>，合同期内我司负责电站的投资、建设、运营、维护。期满后，电站系统及其衍生收益无偿赠予业主方。</p>
-</div>
+</div>`:''}
+
 </div>
 
 <div class="contact-bar">
